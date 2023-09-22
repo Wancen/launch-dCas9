@@ -1,8 +1,9 @@
 import argparse
 import pandas as pd
 import numpy as np
-from CNN import trainCNN
-from XGBoost import trainXGBoost, predictXGBoost
+from runCNN import trainCNN
+from runXGBoost import trainXGBoost, predictXGBoost
+import torch
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train and predict with launch-dCas9.')
     
@@ -18,7 +19,7 @@ if __name__ == "__main__":
 
     # CNN parameters
     parser.add_argument('--batch_size', type=int, default=256, help='(int, default 256) Batch size')
-    parser.add_argument('--epochs', type=int, help='(int, default 60 for promoterFitness, 15 for enhancerFitness) The epoch for CNN')
+    parser.add_argument('--epochs', type=int,default=30, help='(int, default 60 for promoterFitness, 15 for enhancerFitness) The epoch for CNN')
     parser.add_argument('--lr', type=float, default=1e-4, help='learning rate')
 
     # XGBoost parameters
@@ -42,7 +43,7 @@ if __name__ == "__main__":
             elif args.outcome == "promoterFitness":
                 epochs = 60
             else:
-                print("Invalid group: " + grp)
+                print("Invalid group: " + args.model)
             params = {
                     'device': torch.device("cuda" if torch.cuda.is_available() else "cpu"),
                     'epochs': epochs,
@@ -58,7 +59,8 @@ if __name__ == "__main__":
                      train_path=args.train_path, 
                      train_filename=args.train_filename, 
                      variant=args.variant,
-                     params = params)
+                     params = params,
+                     outcome = args.outcome)
         else:
             # Set default params based on region
             if args.outcome == "promoterFitness":
@@ -132,7 +134,8 @@ if __name__ == "__main__":
                          train_path=args.train_path, 
                          train_filename=args.train_filename, 
                          variant=args.variant,
-                         params = params)
+                         params = params,
+                         outcome = args.outcome)
     else:
         print('\n> Predicting data ...')
         if args.model == "CNN":
@@ -140,12 +143,14 @@ if __name__ == "__main__":
                        test_path=args.test_path, 
                        test_filename=args.test_filename, 
                        result_path=args.result_path, 
-                       variant=args.variant)
+                       variant=args.variant,
+                       outcome = args.outcome)
         else:
             print(args)
             predictXGBoost(model_path=args.model_path, 
                            test_path=args.test_path, 
                            test_filename=args.test_filename, 
                            result_path=args.result_path, 
-                           variant=args.variant)
+                           variant=args.variant,
+                           outcome = args.outcome)
 

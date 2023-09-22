@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os, sys
 from sklearn.preprocessing import OneHotEncoder
 
 def generateSequence(path, filename):
@@ -65,4 +66,10 @@ def preprocess_seq(data):
                 print("Non-ATGC character " + data[i])
                 sys.exit()
     print("Preprocessing the sequence done")
-    return DATA_X
+
+    print("Generate position features for CNN")
+    # Dinucleotide counts
+    dinucleotide = ['A','T','C','G', 'GC']
+    count1 = pd.DataFrame([[spacer.count(d) for d in dinucleotide] for spacer in data])
+    count1.columns = [f"{d}count" for d in dinucleotide]
+    return DATA_X, count1

@@ -5,11 +5,11 @@ import numpy as np
 from util import generateSequence
 from sklearn.metrics import roc_auc_score
 
-def predictXGBoost(model_path, test_path, test_filename, result_path, variant):
+def predictXGBoost(model_path, test_path, test_filename, result_path, variant, outcome):
 
     generateSequence(test_path, test_filename)
     test_seq_path = test_path + "data_poiFeat.csv"
-    result_model = model_path + "model.txt"
+    result_model = model_path + "model" + outcome + ".txt"
     result_prediction = result_path + "prediction.csv"
 
     test = pd.read_csv(test_path + test_filename)
@@ -49,13 +49,13 @@ def predictXGBoost(model_path, test_path, test_filename, result_path, variant):
 
 
 
-def trainXGBoost(model_path, train_path, train_filename, variant, params):
+def trainXGBoost(model_path, train_path, train_filename, variant, params, outcome):
 
     # Assuming you have defined the generateSequence function somewhere
     generateSequence(train_path, train_filename)
 
     train_seq_path = train_path + "data_poiFeat.csv"
-    result_model = model_path + "model.txt"
+    result_model = model_path + "model" + outcome + ".txt"
 
     train = pd.read_csv(train_path+train_filename)
     y = train[["significance"]].values
