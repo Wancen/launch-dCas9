@@ -57,7 +57,8 @@ if __name__ == "__main__":
             trainCNN(model_path=args.model_path, 
                      train_path=args.train_path, 
                      train_filename=args.train_filename, 
-                     variant=args.variant)
+                     variant=args.variant,
+                     params = params)
         else:
             # Set default params based on region
             if args.outcome == "promoterFitness":

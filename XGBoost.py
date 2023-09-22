@@ -2,7 +2,7 @@ import xgboost as xgb
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
-from preprocessXGBoost import generateSequence
+from util import generateSequence
 from sklearn.metrics import roc_auc_score
 
 def predictXGBoost(model_path, test_path, test_filename, result_path, variant):

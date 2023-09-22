@@ -42,3 +42,27 @@ def generateSequence(path, filename):
     poi_feat_train = pd.concat([newdata, newdata2, count1, count2], axis=1)
     poi_feat_train.to_csv(path + "data_poiFeat.csv", index=False)
 
+def preprocess_seq(data):
+    print("Start preprocessing the sequence")
+    length = len(data[0])
+    DATA_X = np.zeros((len(data),4,length), dtype=int)
+    print(DATA_X.shape)
+    for l in range(len(data)):
+        if l % 10000 == 0:
+            print(str(l) + " sequences processed")
+        for i in range(length):
+            try: data[l][i]
+            except: print(data[l], i, length, len(data))
+            if data[l][i]in "Aa":
+                DATA_X[l, 0, i] = 1
+            elif data[l][i] in "Cc":
+                DATA_X[l, 1, i] = 1
+            elif data[l][i] in "Gg":
+                DATA_X[l, 2, i] = 1
+            elif data[l][i] in "Tt":
+                DATA_X[l, 3, i] = 1
+            else:
+                print("Non-ATGC character " + data[i])
+                sys.exit()
+    print("Preprocessing the sequence done")
+    return DATA_X

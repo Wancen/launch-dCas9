@@ -11,6 +11,7 @@ import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 import pandas as pd
 from sklearn.metrics import f1_score, roc_auc_score
+from util import preprocess_seq
 
 def trainCNN(model_path, train_path, train_filename, variant, params):
     train = pd.read_csv(train_path+train_filename)
@@ -61,31 +62,6 @@ batch_size = 256
 lr = 0.0001
 ngpu=1
 
-
-def preprocess_seq(data):
-    print("Start preprocessing the sequence")
-    length = len(data[0])
-    DATA_X = np.zeros((len(data),4,length), dtype=int)
-    print(DATA_X.shape)
-    for l in range(len(data)):
-        if l % 10000 == 0:
-            print(str(l) + " sequences processed")
-        for i in range(length):
-            try: data[l][i]
-            except: print(data[l], i, length, len(data))
-            if data[l][i]in "Aa":
-                DATA_X[l, 0, i] = 1
-            elif data[l][i] in "Cc":
-                DATA_X[l, 1, i] = 1
-            elif data[l][i] in "Gg":
-                DATA_X[l, 2, i] = 1
-            elif data[l][i] in "Tt":
-                DATA_X[l, 3, i] = 1
-            else:
-                print("Non-ATGC character " + data[i])
-                sys.exit()
-    print("Preprocessing the sequence done")
-    return DATA_X
 
 
 
