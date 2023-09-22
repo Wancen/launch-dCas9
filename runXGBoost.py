@@ -10,7 +10,7 @@ def predictXGBoost(model_path, test_path, test_filename, result_path, variant, o
     generateSequence(test_path, test_filename)
     test_seq_path = test_path + "data_poiFeat.csv"
     result_model = model_path + "model" + outcome + ".txt"
-    result_prediction = result_path + "prediction.csv"
+    result_prediction = result_path + "prediction-"+ variant +'-'+ outcome + ".csv"
 
     test = pd.read_csv(test_path + test_filename)
 

@@ -4,17 +4,22 @@
 python -W ignore launch-dCas9.py \
     --model CNN \
     --model_path ./exampleData/ \
-    --train_path /proj/yunligrp/users/tianyou/gRNA/data/data_fivefold/ \
-    --train_filename wgCERES-gRNAs-k562-discovery-screen-pro_baseMean125-binary-1-train-clean.csv\
+    --train_path /proj/milovelab/mu/dukeproj/data/dat_discovery/promoter/ \
+    --train_filename wgCERES-gRNAs-k562-discovery-screen-pro_baseMean125-binary-1-train.csv\
     --variant seq_anno\
     --outcome promoterFitness
-# python -W ignore launch-dCas9.py \
-#     --model CNN \
-#     --model_path ./exampleData/ \
-#     --train_path /proj/milovelab/mu/dukeproj/data/dat_discovery/promoter/ \
-#     --train_filename wgCERES-gRNAs-k562-discovery-screen-pro_baseMean125-binary-1-train.csv\
-#     --variant seq_anno\
-#     --outcome promoterFitness
+
+# predict testing data result based on model-outcome.txt
+python -W ignore launch-dCas9.py \
+    --model CNN \
+    --model_path ./exampleData/ \
+    --test_path ./exampleData/ \
+    --test_filename test.csv\
+    --result_path ./exampleData/ \
+    --variant seq_anno \
+    --outcome promoterFitness
+
+
 
 # predict testing data result based on model-outcome.txt
 # python -W ignore launch-dCas9.py \

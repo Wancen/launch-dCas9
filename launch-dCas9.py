@@ -1,7 +1,7 @@
 import argparse
 import pandas as pd
 import numpy as np
-from runCNN import trainCNN
+from runCNN import trainCNN, predictCNN
 from runXGBoost import trainXGBoost, predictXGBoost
 import torch
 if __name__ == "__main__":
@@ -18,9 +18,9 @@ if __name__ == "__main__":
     parser.add_argument('--outcome', type=str, help='Pertubation outcomes to train', default="single-cell", choices=["promoterFitness", "enhancerFitness","single-cell","WTcounts"])
 
     # CNN parameters
-    parser.add_argument('--batch_size', type=int, default=256, help='(int, default 256) Batch size')
-    parser.add_argument('--epochs', type=int,default=30, help='(int, default 60 for promoterFitness, 15 for enhancerFitness) The epoch for CNN')
-    parser.add_argument('--lr', type=float, default=1e-4, help='learning rate')
+    parser.add_argument('--batch_size', type=int, help='(int, default 256 for cell fitness task, 512 for single-cell gene expression and wild type continuous counts task) Batch size')
+    parser.add_argument('--epochs', type=int, help='(int, default 60 for promoterFitness, 15 for enhancerFitness, 400 for single-cell gene expression, 2000 for Wild type continuous counts task) The epoch for CNN')
+    parser.add_argument('--lr', type=float, help='(float, default 0.0001 for cell Fitness task, 0.00005 for single-cell gene expression)learning rate')
 
     # XGBoost parameters
     parser.add_argument('--max_depth', type=int, help='Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.')
@@ -38,22 +38,38 @@ if __name__ == "__main__":
     if args.train_path is not None:
         print('\n> Training data ...')
         if args.model == "CNN":
-            if args.outcome == "enhancerFitness":
-                epochs = 15
-            elif args.outcome == "promoterFitness":
-                epochs = 60
-            else:
-                print("Invalid group: " + args.model)
-            params = {
-                    'device': torch.device("cuda" if torch.cuda.is_available() else "cpu"),
-                    'epochs': epochs,
-                    'lr': args.lr,
-                    'batch_size': args.batch_size
+            if args.outcome == "promoterFitness":
+                params = {
+                    'epochs': 60,
+                    'lr': 0.0001,
+                    'batch_size': 256
                 }
+            elif args.outcome == "enhancerFitness":
+                params = {
+                    'epochs': 15,
+                    'lr': 0.0001,
+                    'batch_size': 256
+                }
+            elif args.outcome == "single-cell":
+                params = {
+                    'epochs': 400,
+                    'lr': 0.00005,
+                    'batch_size': 512
+                }
+            elif args.outcome == "WTcounts":
+                params = {
+                    'epochs': 2000,
+                    'lr': 0.0001,
+                    'batch_size': 512
+                }
+            params['device'] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             print( f"Using device: {params['device']}" )
             if args.epochs:
                 params['epochs'] = args.epochs
-
+            if args.lr:
+                params['lr'] = args.lr
+            if args.batch_size:
+                params['batch_size'] = args.batch_size
             print(args)
             trainCNN(model_path=args.model_path, 
                      train_path=args.train_path, 

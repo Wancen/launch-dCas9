@@ -52,11 +52,11 @@ class DeepSeqCNN(nn.Module):
             nn.Dropout(0.3))
         dim_x_concat = 80
         dim_x4 = 20  # Update this based on the actual dimension of x4
-        self.dim_fc_anno = dim_x_concat + dim_x4
-        self.dim_fc_seq_anno = self.dim_fc_anno + dim_y
+        self.dim_fc_seq = dim_x_concat + dim_x4
+        self.dim_fc_seq_anno = self.dim_fc_seq + dim_y
         
-        self.fc2_anno = nn.Sequential(
-            nn.Linear(self.dim_fc_anno, 80),
+        self.fc2_seq = nn.Sequential(
+            nn.Linear(self.dim_fc_seq, 80),
             nn.ReLU(),
             nn.Dropout(0.4),
             nn.Linear(80, 60),
@@ -81,7 +81,7 @@ class DeepSeqCNN(nn.Module):
             nn.Linear(40, 1),
         )
         
-    def forward(self, x, y=None, variant="anno"):
+    def forward(self, x, y=None, variant="seq_anno"):
         x0 = self.conv0(x)
         x1 = self.conv1(x)
         x2 = self.conv2(x)
@@ -91,9 +91,9 @@ class DeepSeqCNN(nn.Module):
         x_concat = x_concat.view(-1, 260*10)
         x_concat = self.fc1(x_concat)
         
-        if variant == "anno":
+        if variant == "seq":
             xy_concat = torch.cat((x_concat, x4), dim=1)
-            xy_concat = self.fc2_anno(xy_concat)
+            xy_concat = self.fc2_seq(xy_concat)
         elif variant == "seq_anno":
             if y is None:
                 raise ValueError("y must be provided when variant is 'seq_anno'")
