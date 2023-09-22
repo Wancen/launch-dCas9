@@ -1,7 +1,7 @@
 import argparse
 import pandas as pd
 import numpy as np
-# from CNN import predictCNN, trainCNN
+from CNN import trainCNN
 from XGBoost import trainXGBoost, predictXGBoost
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train and predict with launch-dCas9.')
@@ -15,6 +15,11 @@ if __name__ == "__main__":
     parser.add_argument('--result_path', type=str, required=False, help='Path to save the results.')
     parser.add_argument('--variant', type=str, help='Model variants to train', default="seq_anno", choices=["seq_anno", "seq"])
     parser.add_argument('--outcome', type=str, help='Pertubation outcomes to train', default="single-cell", choices=["promoterFitness", "enhancerFitness","single-cell","WTcounts"])
+
+    # CNN parameters
+    parser.add_argument('--batch_size', type=int, default=256, help='(int, default 256) Batch size')
+    parser.add_argument('--epochs', type=int, help='(int, default 60 for promoterFitness, 15 for enhancerFitness) The epoch for CNN')
+    parser.add_argument('--lr', type=float, default=1e-4, help='learning rate')
 
     # XGBoost parameters
     parser.add_argument('--max_depth', type=int, help='Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.')
@@ -32,6 +37,22 @@ if __name__ == "__main__":
     if args.train_path is not None:
         print('\n> Training data ...')
         if args.model == "CNN":
+            if args.outcome == "enhancerFitness":
+                epochs = 15
+            elif args.outcome == "promoterFitness":
+                epochs = 60
+            else:
+                print("Invalid group: " + grp)
+            params = {
+                    'device': torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+                    'epochs': epochs,
+                    'lr': args.lr,
+                    'batch_size': args.batch_size
+                }
+            print( f"Using device: {params['device']}" )
+            if args.epochs:
+                params['epochs'] = args.epochs
+
             print(args)
             trainCNN(model_path=args.model_path, 
                      train_path=args.train_path, 

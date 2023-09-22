@@ -1,5 +1,4 @@
 import torch
-import argparse
 import os, sys
 import torchvision
 import torchvision.transforms as transforms
@@ -12,10 +11,30 @@ import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 import pandas as pd
 from sklearn.metrics import f1_score, roc_auc_score
-import shap
 
+def trainCNN(model_path, train_path, train_filename, variant, params):
+    train = pd.read_csv(train_path+train_filename)
+    dat = pd.read_csv(datadir+'wgCERES-gRNAs-k562-discovery-screen-'+grp+'_baseMean125-binary-'+str(fold)+'-train-clean.csv', index_col = False)
+    sequence = dat['protospacer']
+    sequence_onehot = preprocess_seq(sequence)
+    label = dat['significance'].to_numpy(dtype = np.float32)
+    class_count = dat['significance'].value_counts()
+    w = class_count[0] / class_count[1]
+    '''Top features that we keep: deltagb, deltagh, H3K27ac, ATAC, DNAse, H3K4me3, TF_GATA2, OGEE_prop_Essential'''
+    feas_sel = ["deltagb", "deltagh", "GCcount", "GCprop", "Acount", "Ccount", "Tcount", "Gcount", "OGEE_prop_Essential", "H3k27ac_CPM_1Kb_new", 
+                "DNAse_CPM_1Kb_new", "ATAC_CPM_1Kb_new", "H3K4me3_CPM_1Kb_new", "TF_GATA2_CPM_1Kb_new"]
+    # annotation = dat.iloc[:,np.r_[13,16:23,40,44:49]].to_numpy(dtype = np.float32)
+    annotation = dat.loc[:,feas_sel].to_numpy(dtype = np.float32)
 
-parser = argparse.ArgumentParser(description='gRNA prediction model')
+    X1 = torch.tensor(sequence_onehot, dtype=torch.float32)
+    #Xloader = torch.utils.data.DataLoader(X, batch_size=batch_size, shuffle=True)
+    X2 = torch.tensor(annotation, dtype=torch.float32)
+    Y = torch.tensor(label, dtype=torch.float32)
+    Y = Y.view(-1, 1)
+    #Yloader = torch.utils.data.DataLoader(Y, batch_size=batch_size, shuffle=True)
+    input_dat = TensorDataset(X1,X2,Y)
+    datloader = DataLoader(input_dat, batch_size=batch_size, shuffle=True)
+
 #parser.add_argument('--savedir', default='./', help='path to save results')
 #parser.add_argument('--ckptdir', default='./ckpt', help='path to save checkpoints')
 #parser.add_argument('--batch-size', type=int, default=128,
@@ -24,9 +43,9 @@ parser = argparse.ArgumentParser(description='gRNA prediction model')
 #                     help='number of epochs to train (default: 100)')
 #parser.add_argument('--lr', type=float, default=0.001,
 #                    help='learning rate (default: 0.001)')
-parser.add_argument('--fold', type=int, default=1, help='which fold of data to use')
+
 parser.add_argument('--grp', default="pro", help='promoter or enhancer region')
-args = parser.parse_args()
+
 #savedir = args.savedir
 #ckptdir = args.ckptdir
 
@@ -41,18 +60,6 @@ resultdir = '/proj/yunligrp/users/tianyou/gRNA/result/binary_fivefold/'
 batch_size = 256
 lr = 0.0001
 ngpu=1
-fold = args.fold
-grp = args.grp
-if grp == "enh":
-    epochs = 15
-elif grp == "pro":
-    epochs = 60
-else:
-    print("Invalid group: " + grp)
-
-print("Group: "+grp+"; Fold: "+str(fold))
-device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
-print(device)
 
 
 def preprocess_seq(data):
@@ -80,28 +87,6 @@ def preprocess_seq(data):
     print("Preprocessing the sequence done")
     return DATA_X
 
-
-
-dat = pd.read_csv(datadir+'wgCERES-gRNAs-k562-discovery-screen-'+grp+'_baseMean125-binary-'+str(fold)+'-train-clean.csv', index_col = False)
-sequence = dat['protospacer']
-sequence_onehot = preprocess_seq(sequence)
-label = dat['significance'].to_numpy(dtype = np.float32)
-class_count = dat['significance'].value_counts()
-w = class_count[0] / class_count[1]
-'''Top features that we keep: deltagb, deltagh, H3K27ac, ATAC, DNAse, H3K4me3, TF_GATA2, OGEE_prop_Essential'''
-feas_sel = ["deltagb", "deltagh", "GCcount", "GCprop", "Acount", "Ccount", "Tcount", "Gcount", "OGEE_prop_Essential", "H3k27ac_CPM_1Kb_new", 
-            "DNAse_CPM_1Kb_new", "ATAC_CPM_1Kb_new", "H3K4me3_CPM_1Kb_new", "TF_GATA2_CPM_1Kb_new"]
-# annotation = dat.iloc[:,np.r_[13,16:23,40,44:49]].to_numpy(dtype = np.float32)
-annotation = dat.loc[:,feas_sel].to_numpy(dtype = np.float32)
-
-X1 = torch.tensor(sequence_onehot, dtype=torch.float32)
-#Xloader = torch.utils.data.DataLoader(X, batch_size=batch_size, shuffle=True)
-X2 = torch.tensor(annotation, dtype=torch.float32)
-Y = torch.tensor(label, dtype=torch.float32)
-Y = Y.view(-1, 1)
-#Yloader = torch.utils.data.DataLoader(Y, batch_size=batch_size, shuffle=True)
-input_dat = TensorDataset(X1,X2,Y)
-datloader = DataLoader(input_dat, batch_size=batch_size, shuffle=True)
 
 
 ## test set
