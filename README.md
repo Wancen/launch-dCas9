@@ -22,10 +22,14 @@ cd launch-dCas9
 ```
 Use python virutal environment with conda
 ```bash
-conda create -n launch-dCas9 python=3.8 pip
-conda activate launch-dCas9
-pip install -r requirements.txt
+conda env create -f environment.yml
 ```
+or 
+```bash
+conda create -n launch-dCas9 --file requirements.txt
+conda activate launch-dCas9
+```
+
 # Usage
 ## Prediction 
 Have to specify *model_path*, *test_path*, *test_filename*, *result_path*, *outcome*
